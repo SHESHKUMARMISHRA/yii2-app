@@ -231,3 +231,32 @@ vendor/bin/codecept run functional,unit --coverage --coverage-html --coverage-xm
 ```
 
 You can see code coverage output under the `tests/_output` directory.
+
+---------------------------------------------------------------------------
+Rebuild Properly (FULL CLEAN BUILD)
+
+```
+docker-compose down -v
+docker system prune -af
+docker-compose build --no-cache
+docker-compose up
+
+```
+If it STILL fails (rare case)
+
+Your VPN may block Docker traffic entirely.
+Quick test:
+
+````
+docker run --rm debian:bullseye curl https://deb.debian.org
+
+
+
+Run migration
+```
+docker-compose exec php php yii migrate
+
+Run dummy script
+```
+docker-compose exec php php /var/www/html/generate-dummy-claims.php
+

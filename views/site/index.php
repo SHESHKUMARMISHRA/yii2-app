@@ -5,6 +5,7 @@ use yii\web\View;
 use yii\jui\DatePicker;
 
 $this->title = 'Claims Grid';
+
 ?>
 
 <h3><?= Html::encode($this->title) ?></h3>
