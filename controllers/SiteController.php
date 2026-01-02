@@ -10,7 +10,8 @@ use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
 use yii\data\ArrayDataProvider;
-
+use yii\helpers\ArrayHelper;
+use app\models\ClaimSearch;
 
 class SiteController extends Controller
 {
@@ -63,74 +64,40 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        $searchModel = new \app\models\ClaimSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        $session = \Yii::$app->session;
+        $allColumns = \Yii::$app->params['claimGridColumns'];
+
+        if (!$session->has('claimGridConfig')) {
+            $session->set(
+                'claimGridConfig',
+                ArrayHelper::map(
+                    $allColumns,
+                    fn($c) => $c['default'],
+                    fn($c) => $c['default']
+                )
+            );
+        }
+
+        $searchModel = new ClaimSearch();
+        $dataProvider = $searchModel->search(\Yii::$app->request->queryParams);
 
         return $this->render('index', [
-            'searchModel' => $searchModel,
+            'searchModel'   => $searchModel,
             'dataProvider' => $dataProvider,
+            'allColumns'   => $allColumns,
+            'columnsConfig'=> $session->get('claimGridConfig'),
         ]);
     }
 
-    // public function actionIndex()
-    // {
-    //    // return $this->render('index');
-    //    $data = [
-    //         [
-    //             'id' => 1,
-    //             'file_number' => 'FN-1001',
-    //             'manager_name' => 'Amit Sharma',
-    //             'service_provider' => 'ABC Services',
-    //             'claim_number' => 'CLM-9001',
-    //             'assignment_id' => 'ASG-5001',
-    //             'company_name' => 'XYZ Insurance',
-    //             'invoice_date' => '2025-01-10',
-    //             'expenses' => 5000,
-    //             'sales_tax' => 900,
-    //             'payment_amount' => 4500,
-    //             'balance_amount' => 1400,
-    //             'payment_date' => '2025-01-20',
-    //             'loss_amount' => 2000,
-    //             'details' => 'Detailed description for FN-1001'
-    //         ],
-    //         [
-    //             'id' => 2,
-    //             'file_number' => 'FN-1002',
-    //             'manager_name' => 'Rohit Verma',
-    //             'service_provider' => 'Delta Corp',
-    //             'claim_number' => 'CLM-9002',
-    //             'assignment_id' => 'ASG-5002',
-    //             'company_name' => 'LMN Insurance',
-    //             'invoice_date' => '2025-01-12',
-    //             'expenses' => 7000,
-    //             'sales_tax' => 1260,
-    //             'payment_amount' => 6000,
-    //             'balance_amount' => 2260,
-    //             'payment_date' => '2025-01-25',
-    //             'loss_amount' => 3500,
-    //             'details' => 'Detailed description for FN-1002'
-    //         ],
-    //     ];
-
-    //     $dataProvider = new ArrayDataProvider([
-    //         'allModels' => $data,
-    //         'pagination' => [
-    //             'pageSize' => 10,
-    //         ],
-    //         'sort' => [
-    //             'attributes' => [
-    //                 'file_number',
-    //                 'manager_name',
-    //                 'invoice_date',
-    //                 'payment_amount',
-    //             ],
-    //         ],
-    //     ]);
-
-    //     return $this->render('index', [
-    //         'dataProvider' => $dataProvider,
-    //     ]);
-    // }
+    public function actionSaveGridConfig()
+    {
+        \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        \Yii::$app->session->set(
+            'claimGridConfig',
+            \Yii::$app->request->post('columns', [])
+        );
+        return ['success' => true];
+    }
 
     /**
      * Login action.
